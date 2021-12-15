@@ -3,7 +3,7 @@ import DBConnect
 
 app = Flask(__name__)
 
-@app.route('/selectAll/<string:nomTable>')
+@app.route('/selectAll/<string:nomTable>', methods=['GET'])
 def SelectFromTableWithSpark(nomTable):
     try:
         spark = DBConnect.DBConnectSpark()
@@ -12,8 +12,8 @@ def SelectFromTableWithSpark(nomTable):
         query = 'SELECT * from {} '.format(nomTable)
         df = spark.sql(query)
         response = app.response_class(
-            response= df.toJSON().collect(),
-            status=200,
+            response = df.toJSON().collect(),
+            status =200,
             mimetype='application/json'
         )
         return response
@@ -22,7 +22,7 @@ def SelectFromTableWithSpark(nomTable):
     finally:
         spark.stop()
 
-@app.route('/calculNombreTotal/<string:nomTable>')
+@app.route('/calculNombreTotal/<string:nomTable>', methods=['GET'])
 def CalculNombreTotalSpark(nomTable):
     try:
         spark = DBConnect.DBConnectSpark()
@@ -36,7 +36,7 @@ def CalculNombreTotalSpark(nomTable):
     finally:
         spark.stop()
 
-@app.route('/calculNumerateur/<string:nomTable>/<string:colonne>/<string:value>')
+@app.route('/calculNumerateur/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
 def CalculNumrateurSpark(nomTable, colonne, value):
     try:
         spark = DBConnect.DBConnectSpark()
@@ -51,15 +51,15 @@ def CalculNumrateurSpark(nomTable, colonne, value):
         spark.stop()
 
 
-@app.route('/calculTaux/<string:nomTable>/<string:colonne>/<string:value>')
+@app.route('/calculTaux/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
 def CalculTauxFromSpark(nomTable, colonne, value):
     total = int(CalculNombreTotalSpark(nomTable))
     num = int(CalculNumrateurSpark(nomTable, colonne, value))
     taux = (num / total) * 100
     response = app.response_class(
-        response= str(taux),
-        status=200,
-        mimetype='application/json'
+        response = str(taux),
+        status = 200,
+        mimetype = 'application/json'
     )
     return response
 
