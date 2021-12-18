@@ -3,7 +3,7 @@ import DBConnect
 
 app = Flask(__name__)
 
-@app.route('/selectAll/<string:nomTable>', methods=['GET'])
+@app.route('/selectAllWithParamTable/<string:nomTable>', methods=['GET'])
 def SelectFromTableWithSpark(nomTable):
     try:
         spark = DBConnect.DBConnectSpark()
@@ -11,8 +11,9 @@ def SelectFromTableWithSpark(nomTable):
         tempView = table.createTempView(nomTable)
         query = 'SELECT * from {} '.format(nomTable)
         df = spark.sql(query)
+        to_pandans = df.toPandas()
         response = app.response_class(
-            response = df.toJSON().collect(),
+            response = to_pandans.to_json(orient='table'),
             status =200,
             mimetype='application/json'
         )
@@ -36,7 +37,7 @@ def CalculNombreTotalSpark(nomTable):
     finally:
         spark.stop()
 
-@app.route('/calculNumerateur/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
+@app.route('/calculNumerateurParam1/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
 def CalculNumrateurSpark(nomTable, colonne, value):
     try:
         spark = DBConnect.DBConnectSpark()
@@ -51,7 +52,7 @@ def CalculNumrateurSpark(nomTable, colonne, value):
         spark.stop()
 
 
-@app.route('/calculTaux/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
+@app.route('/calculTauxParam1/<string:nomTable>/<string:colonne>/<string:value>', methods=['GET'])
 def CalculTauxFromSpark(nomTable, colonne, value):
     total = int(CalculNombreTotalSpark(nomTable))
     num = int(CalculNumrateurSpark(nomTable, colonne, value))
@@ -59,7 +60,6 @@ def CalculTauxFromSpark(nomTable, colonne, value):
     response = app.response_class(
         response = str(taux),
         status = 200,
-        mimetype = 'application/json'
     )
     return response
 
